@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="th"><head><base target="_top"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fbf8f4;--card:#fff;--ink:#3b3a46;--mute:#8d8a99;--line:#eee8e1;--mint:#bfe8d8;--mintd:#2f9e7a;--pink:#ffd9e0;--pinkd:#d6455d;--sky:#d8ecff;--skyd:#3b82c4;--lav:#e6dcff;--r:18px}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Prompt,sans-serif;font-size:15px}
+.wrap{max-width:980px;margin:0 auto;padding:18px 16px 110px}
+h1{font-size:20px;margin:0;font-weight:600}h2{font-size:17px;margin:18px 0 8px;font-weight:600}
+.top{display:flex;gap:12px;align-items:center;margin-bottom:14px}.logo{font-size:30px;background:var(--mint);border-radius:16px;width:52px;height:52px;display:grid;place-items:center;flex:none}
+.sub{color:var(--mute);font-size:12.5px;font-weight:300}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.grow{flex:1}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;box-shadow:0 2px 10px #5a4a3a0a}
+.tile{cursor:pointer;transition:transform .15s,border-color .15s}.tile:hover{transform:translateY(-2px);border-color:var(--mintd)}
+.tile .ic{font-size:26px}.bar{height:7px;background:var(--line);border-radius:9px;overflow:hidden;margin-top:8px}.bar i{display:block;height:100%;background:var(--mintd);border-radius:9px}
+button,select,input,textarea{font-family:inherit;font-size:14px;color:var(--ink)}
+.btn{border:0;border-radius:14px;padding:10px 16px;background:var(--mint);cursor:pointer;font-weight:500}.btn:hover{filter:brightness(.97)}
+.btn.pink{background:var(--pink)}.btn.sky{background:var(--sky)}.btn.ghost{background:#fff;border:1px solid var(--line)}.btn:disabled{opacity:.5}
+input,select,textarea{border:1px solid var(--line);border-radius:12px;padding:9px 11px;background:#fff;width:100%}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--mint)}input:disabled,textarea:disabled{background:#f7f4f0;color:var(--mute)}
+.badge{display:inline-block;padding:3px 11px;border-radius:20px;font-size:12.5px;font-weight:500}
+.ok{background:#d8f3e8;color:var(--mintd)}.no{background:#ffe0e5;color:var(--pinkd)}.na{background:#eee;color:var(--mute)}
+.h.pass{background:#effaf5;border-color:#a9dfc8}.h.fail{background:#fff2f4;border-color:#f4b9c3}
+.big{font-size:30px;font-weight:600;line-height:1}.big small{font-size:13px;color:var(--mute);font-weight:300}
+.cmp{display:grid;grid-template-columns:48px 1fr 34px;gap:6px;align-items:center;font-size:12px;color:var(--mute);margin-top:6px}
+.cmp .bar{margin:0}.spark{display:flex;gap:6px;align-items:flex-end;height:40px;margin-top:8px}.spark div{flex:1;text-align:center;font-size:10px;color:var(--mute)}.spark b{display:block;background:var(--lav);border-radius:6px 6px 0 0;min-height:3px}
+.item{display:grid;grid-template-columns:1fr 84px 84px;gap:8px;padding:12px 0;border-bottom:1px dashed var(--line)}
+.item .t{grid-column:1/-1;font-size:14px}.item .adv{grid-column:1/-1}.item label{font-size:11.5px;color:var(--mute)}
+.ev{grid-column:1/-1;font-size:13px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sticky{position:fixed;left:0;right:0;bottom:0;background:#fffe;backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:10px 16px;z-index:5}
+.sticky .in{max-width:980px;margin:auto;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.reset{position:fixed;left:12px;bottom:12px;z-index:6;font-size:12px;padding:8px 12px}
+.modal{position:fixed;inset:0;background:#3b3a4640;display:grid;place-items:center;z-index:20;padding:16px}.modal .card{max-width:380px;width:100%}
+.toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:14px;z-index:30}
+@media(max-width:560px){.item{grid-template-columns:1fr 1fr}.item .t{grid-column:1/-1}.reset{bottom:74px}}
+</style></head><body>
+<div class="wrap" id="app"></div>
+<div id="layer"></div>
+<script>
+const api=(fn,...a)=>new Promise((ok,no)=>{if(typeof google==='undefined'||!google.script)return no(new Error('เปิดผิดที่: ต้องเปิดผ่านลิงก์ Web app (ลงท้ายด้วย /exec) ไม่ใช่เปิดไฟล์ HTML ตรงๆ'));google.script.run.withSuccessHandler(ok).withFailureHandler(e=>no(new Error(e.message||e))) [fn](...a)});
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const $=q=>document.querySelector(q), app=$('#app'), layer=$('#layer');
+const S={year:new Date().getFullYear()+543+(new Date().getMonth()>=9?1:0),district:null,token:null,role:null,edit:false,dirty:false,A:null,hosp:null};
+const FY=[0,1,2,3].map(i=>S.year-i);
+function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2600)}
+function modal(html){layer.innerHTML='<div class="modal"><div class="card">'+html+'</div></div>'}
+function closeM(){layer.innerHTML=''}
+function busy(on){document.body.style.cursor=on?'progress':''}
+function yearSel(){return '<select style="width:auto" onchange="S.year=+this.value;go()">'+FY.map(y=>`<option ${y==S.year?'selected':''}>${y}</option>`).join('')+'</select>'}
+function head(icon,title,sub,right){return `<div class="top"><div class="logo">${icon}</div><div class="grow"><h1>${title}</h1><div class="sub">${sub}</div></div>${right||''}</div>`}
+const badge=(c,a)=>!a?'<span class="badge na">ยังไม่ประเมิน</span>':c>=66?'<span class="badge ok">ผ่าน (Pass)</span>':'<span class="badge no">ไม่ผ่าน (Fail)</span>';
+
+/* ---- 1 อำเภอ ---- */
+const DN=['เมืองสุรินทร์','ศีขรภูมิ','ปราสาท','กาบเชิง','เขวาสินรินทร์','จอมพระ','ชุมพลบุรี','ท่าตูม','โนนนารายณ์','บัวเชด','พนมดงรัก','รัตนบุรี','ลำดวน','ศรีณรงค์','สนม','สังขะ','สำโรงทาบ'];
+const tile=(n,x)=>`<div class="card tile" onclick="askPw('${n}')"><div class="ic">🏥</div><b>อำเภอ${n}</b><div class="sub" id="c_${n}">${x?`ผ่านแล้ว ${x.passed}/${x.total} แห่ง`:'ผ่านแล้ว … แห่ง'}</div><div class="bar"><i id="b_${n}" style="width:${x&&x.total?x.passed/x.total*100:0}%"></i></div></div>`;
+let DC={};
+async function go(){S.edit=false;S.dirty=false;window.onbeforeunload=null;S.district=null;
+ const draw=()=>app.innerHTML=head('💊','ประเมิน รพ.สต. จ.สุรินทร์','เลือกอำเภอเพื่อเริ่มประเมิน','<div>ปีงบฯ '+yearSel()+'</div>')+'<div class="grid">'+DN.map(n=>tile(n,DC[S.year+n])).join('')+'</div>'+resetBtn();
+ draw();
+ try{const d=await api('getDistricts',S.year);d.forEach(x=>DC[S.year+x.name]=x);if(!S.district&&app.querySelector('.grid'))draw()}catch(e){toast(e.message)}}
+function resetBtn(){return '<button class="btn pink reset" onclick="askReset()">🧹 ล้างคะแนน (ผู้ดูแล)</button>'}
+function askPw(d){modal(`<div class="ic" style="font-size:30px">🔐</div><h2 style="margin-top:4px">อำเภอ${d}</h2><div class="sub">ใส่รหัสผ่านของอำเภอ</div><input id="pw" type="password" autofocus style="margin:12px 0" onkeydown="if(event.key=='Enter')doLogin('${d}')"><div class="row"><button class="btn grow" onclick="doLogin('${d}')">เข้าสู่ระบบ</button><button class="btn ghost" onclick="closeM()">ยกเลิก</button></div>`);setTimeout(()=>$('#pw').focus(),50)}
+async function doLogin(d){try{const r=await api('login',d,$('#pw').value);if(!r.ok)return toast('รหัสผ่านไม่ถูกต้อง');S.token=r.token;S.role=r.role;S.district=d;closeM();hosp()}catch(e){toast(e.message)}}
+
+/* ---- 3 รพ.สต. ---- */
+async function hosp(){app.innerHTML=head('🏡','อำเภอ'+S.district,'กำลังโหลดรายชื่อ รพ.สต.…','')+'<div class="grid">'+'<div class="card" style="height:150px;opacity:.5"></div>'.repeat(6)+'</div>';
+ try{const L=await api('listHospitals',S.token,S.district,S.year);S.hosp=L;
+ app.innerHTML=head('🏡','อำเภอ'+S.district,'เลือก รพ.สต. เพื่อประเมิน · เกณฑ์ผ่าน ≥ 66/82',`<div class="row"><button class="btn sky" onclick="exp('${S.district}')">📥 Excel</button>${S.role=='admin'?'<button class="btn sky" onclick="exp(\'ALL\')">📥 ทุกอำเภอ</button>':''}<button class="btn ghost" onclick="go()">← กลับ</button></div>`)+
+ '<div class="grid">'+L.map((h,i)=>{const cls=h.assessed?(h.committee>=66?'pass':'fail'):'';const mx=Math.max(82,...h.history.map(x=>x.score));
+ return `<div class="card tile h ${cls}" onclick="openA(${i})"><div class="row"><b class="grow">${esc(h.name)}</b>${badge(h.committee,h.assessed)}</div>
+ <div class="big" style="margin:8px 0">${h.committee}<small> /82</small></div>
+ <div class="cmp">ตนเอง<div class="bar"><i style="width:${h.self/82*100}%;background:var(--skyd)"></i></div>${h.self}</div>
+ <div class="cmp">ค.ป.ค.ม.<div class="bar"><i style="width:${h.committee/82*100}%"></i></div>${h.committee}</div>
+ ${h.history.length?'<div class="spark">'+h.history.map(x=>`<div><b style="height:${x.score/mx*30}px"></b>${x.year%100}</div>`).join('')+'<div style="flex:3;text-align:right">📈 ย้อนหลัง</div></div>':''}</div>`}).join('')+'</div>'+resetBtn()}catch(e){toast(e.message);go()}}
+
+/* ---- 4 ประเมิน ---- */
+async function openA(i){const h=S.hosp[i];S.cur=h.name;S.edit=false;S.dirty=false;app.innerHTML='<div class="sub">กำลังโหลด…</div>';
+ try{S.A=await api('getAssessment',S.token,S.district,h.name,S.year);S.vals={};S.A.criteria.forEach(c=>S.vals[c.id]=Object.assign({self:'',committee:'',advice:'',evidence:''},S.A.saved[c.id]));renderA()}catch(e){toast(e.message);hosp()}}
+const sec={1:['💊','1. การจัดบริการเภสัชกรรมและการใช้ยาอย่างสมเหตุผล (RDU)'],2:['🛒','2. งานคุ้มครองผู้บริโภคด้านสุขภาพ (คบส.)']};
+function renderA(){const C=S.A.criteria,dis=S.edit?'':'disabled';let h=head('📝',esc(S.cur),'อำเภอ'+S.district+' · ปีงบฯ '+S.year,'<button class="btn ghost" onclick="back()">← กลับ</button>');
+ [1,2].forEach(s=>{h+=`<h2>${sec[s][0]} ${sec[s][1]}</h2><div class="card">`+C.filter(c=>c.section==s).map(c=>{const v=S.vals[c.id];return `<div class="item"><div class="t"><b>${esc(c.id)}</b> ${esc(c.text)} <span class="sub">(เต็ม ${c.max})</span></div>
+ <div><label>ตนเอง</label><input type="number" min="0" max="${c.max}" step="0.5" ${dis} value="${v.self}" oninput="chg('${c.id}','self',this.value,${c.max})"></div>
+ <div><label>ค.ป.ค.ม.</label><input type="number" min="0" max="${c.max}" step="0.5" ${dis} value="${v.committee}" oninput="chg('${c.id}','committee',this.value,${c.max})"></div>
+ <div class="adv"><label>💬 คำแนะนำ</label><textarea rows="2" ${dis} oninput="chg('${c.id}','advice',this.value)">${esc(v.advice)}</textarea></div>
+ <div class="ev">📎 ${v.evidence?`<a href="${esc(v.evidence)}" target="_blank">ดูหลักฐาน</a>`:'<span class="sub">ยังไม่มีหลักฐาน</span>'}
+ ${S.edit?`<label class="btn ghost" style="padding:6px 12px;margin:0">แนบไฟล์<input type="file" hidden onchange="upl('${c.id}',this)"></label>`:''}</div></div>`}).join('')+'</div>'});
+ h+=`<div class="sticky"><div class="in"><div id="tot"></div><button id="mb" class="btn" onclick="mainBtn()"></button></div></div>`;app.innerHTML=h;tot()}
+function sum(k){return Object.values(S.vals).reduce((a,v)=>a+(Number(v[k])||0),0)}
+function tot(){const c=sum('committee'),s=sum('self');$('#tot').innerHTML=`<b>ค.ป.ค.ม. ${c}/82</b> ${badge(c,c>0||s>0)} <span class="sub">ตนเอง ${s}</span>`;const b=$('#mb');b.textContent=S.dirty?'💾 บันทึก':(S.edit?'✏️ กำลังแก้ไข…':'✏️ แก้ไข');b.className='btn '+(S.dirty?'sky':'')}
+function chg(id,k,val,max){if(max&&+val>max){val=max;event.target.value=max}S.vals[id][k]=val;S.dirty=true;window.onbeforeunload=()=>'ยังไม่ได้บันทึกคะแนน';tot()}
+function mainBtn(){if(S.dirty)return save();S.edit=true;renderA()}
+async function save(after){busy(1);try{const items=Object.entries(S.vals).map(([item,v])=>Object.assign({item},v));await api('saveAssessment',S.token,S.district,S.cur,S.year,items,S.role);S.dirty=false;S.edit=false;window.onbeforeunload=null;toast('บันทึกแล้ว ✓');closeM();after?after():renderA()}catch(e){toast(e.message)}busy(0)}
+function back(){if(!S.dirty)return hosp();modal(`<div style="font-size:30px">⚠️</div><h2 style="margin-top:4px">ยังไม่ได้บันทึกคะแนน</h2><div class="sub" style="margin-bottom:12px">ต้องการบันทึกก่อนออกหรือไม่</div><div class="row"><button class="btn grow" onclick="save(hosp)">💾 บันทึกและออก</button><button class="btn pink" onclick="S.dirty=false;window.onbeforeunload=null;closeM();hosp()">ออกโดยไม่บันทึก</button><button class="btn ghost" onclick="closeM()">กลับไปแก้ไข</button></div>`)}
+async function upl(id,el){const f=el.files[0];if(!f)return;if(f.size>8e6)return toast('ไฟล์ใหญ่เกิน 8 MB');toast('กำลังอัปโหลด…');
+ const b64=await new Promise(r=>{const x=new FileReader();x.onload=()=>r(x.result.split(',')[1]);x.readAsDataURL(f)});
+ try{S.vals[id].evidence=await api('uploadEvidence',S.token,S.district,S.cur,f.name,f.type||'application/octet-stream',b64);S.dirty=true;renderA();toast('แนบไฟล์แล้ว (อย่าลืมกดบันทึก)')}catch(e){toast(e.message)}}
+
+/* ---- export / reset ---- */
+async function exp(d){busy(1);toast('กำลังสร้างไฟล์ Excel…');try{const r=await api('exportExcel',S.token,d,S.year);const a=document.createElement('a');a.href='data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,'+r.b64;a.download=r.name;a.click()}catch(e){toast(e.message)}busy(0)}
+function askReset(){modal(`<div style="font-size:30px">🧹</div><h2 style="margin-top:4px">ล้างคะแนนประเมิน</h2><div class="sub">เฉพาะผู้ดูแลระบบ · ใส่รหัสผ่าน</div><input id="rp" type="password" style="margin:12px 0"><div class="row"><button class="btn pink grow" onclick="confirmReset()">ต่อไป</button><button class="btn ghost" onclick="closeM()">ยกเลิก</button></div>`)}
+function confirmReset(){const pw=$('#rp').value;modal(`<div style="font-size:30px">❗</div><h2 style="margin-top:4px">ยืนยันล้างคะแนนทุกอำเภอ?</h2><div class="sub" style="margin-bottom:12px">คะแนนปีงบฯ ${S.year} ของทุกอำเภอจะถูกลบ และกู้คืนไม่ได้</div><div class="row"><button class="btn pink grow" onclick="doReset('${pw.replace(/'/g,"\\'")}')">ยืนยัน ล้างคะแนน</button><button class="btn ghost" onclick="closeM()">ยกเลิก</button></div>`)}
+async function doReset(pw){try{const r=await api('resetAll',pw,S.year);closeM();if(!r.ok)return toast('รหัสผ่านไม่ถูกต้อง');toast('ล้างคะแนนเรียบร้อย');go()}catch(e){toast(e.message)}}
+go();
+</script></body></html>
